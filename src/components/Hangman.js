@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './hangman.css';
+import '../styles/hangman.css';
 import { CATEGORIES } from './categories';
 
 const Hangman = ({ onBackToMenu }) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Wordle.css';
+import '../styles/Wordle.css';
 import { WORD_CATEGORIES } from './wordleCategories';
 
 const Wordle = ({ onBackToMenu }) => {
