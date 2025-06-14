@@ -1,7 +1,7 @@
 export const WORD_CATEGORIES = {
   programming: {
-    name: 'Programming',
-    words: ['REACT', 'SWIFT', 'REDUX', 'SCALA', 'UNITY'],
+    name: 'Programming Languages',
+    words: ['SWIFT', 'SCALA', 'BASIC', 'FLASH', 'RUST'],
     emoji: '💻'
   },
   animals: {
@@ -13,10 +13,9 @@ export const WORD_CATEGORIES = {
     name: 'Foods',
     words: ['PIZZA', 'SUSHI', 'TACOS', 'PASTA', 'STEAK'],
     emoji: '🍔'
-  },
-  sports: {
+  },  sports: {
     name: 'Sports',
-    words: ['RUGBY', 'CHESS', 'CYCLE', 'SKATE', 'JETER'],
+    words: ['RUGBY', 'CHESS', 'KENDO', 'BOWLS', 'SQUASH'],
     emoji: '⚽'
   },
   movies: {
