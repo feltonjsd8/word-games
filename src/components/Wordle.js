@@ -167,10 +167,26 @@ const Wordle = ({ onBackToMenu }) => {
   const getTileClass = (letter, index, rowIndex) => {
     if (rowIndex > currentRow) return '';
     if (rowIndex === currentRow) return '';
-    if (letter === targetWord[index]) return 'correct';
-    if (targetWord.includes(letter)) return 'wrong-position';
-    return 'incorrect';
+    
+    const classes = [];
+    if (letter === targetWord[index]) {
+      classes.push('correct');
+    } else if (targetWord.includes(letter)) {
+      classes.push('wrong-position');
+    } else {
+      classes.push('incorrect');
+    }
+    
+    if (rowIndex === currentRow - 1) {
+      classes.push('flip');
+    }
+    
+    return classes.join(' ');
   };
+
+  const getFlipDelay = (index) => ({
+    '--flip-delay': `${index * 200}ms`
+  });
 
   // Add category selection screen
   if (showCategorySelect) {
@@ -228,19 +244,17 @@ const Wordle = ({ onBackToMenu }) => {
         <div className="wordle-grid">
           {guesses.map((guess, rowIndex) => (
             <div key={rowIndex} className="wordle-row">
-              {Array(5).fill('').map((_, index) => {
-                const letter = rowIndex === currentRow 
-                  ? currentGuess[index] || ''
-                  : guess[index] || '';
-                return (
-                  <div 
-                    key={index} 
-                    className={`wordle-tile ${getTileClass(letter, index, rowIndex)}`}
-                  >
-                    {letter}
-                  </div>
-                );
-              })}
+              {Array.from({ length: 5 }, (_, index) => (
+                <div
+                  key={index}
+                  className={`wordle-tile ${getTileClass(guess[index], index, rowIndex)}`}
+                  style={getFlipDelay(index)}
+                >
+                  {rowIndex === currentRow && index < currentGuess.length
+                    ? currentGuess[index]
+                    : guess[index] || ''}
+                </div>
+              ))}
             </div>
           ))}
         </div>
