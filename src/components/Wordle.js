@@ -96,20 +96,25 @@ const Wordle = ({ onBackToMenu }) => {
 
     // Update letter states
     const newLetterStates = { ...letterStates };
+    
+    // First, mark incorrect letters
+    for (let i = 0; i < currentGuess.length; i++) {
+      const letter = currentGuess[i];
+      if (!targetWord.includes(letter)) {
+        newLetterStates[letter] = 'incorrect';
+      }
+    }
+    
+    // Then, mark correct letters and positions
     for (let i = 0; i < currentGuess.length; i++) {
       const letter = currentGuess[i];
       if (letter === targetWord[i]) {
         newLetterStates[letter] = 'correct';
-      } else if (targetWord.includes(letter)) {
-        if (newLetterStates[letter] !== 'correct') {
-          newLetterStates[letter] = 'wrong-position';
-        }
-      } else {
-        if (!newLetterStates[letter]) {
-          newLetterStates[letter] = 'incorrect';
-        }
+      } else if (targetWord.includes(letter) && newLetterStates[letter] !== 'correct') {
+        newLetterStates[letter] = 'wrong-position';
       }
     }
+    
     setLetterStates(newLetterStates);
 
     if (currentGuess === targetWord) {
