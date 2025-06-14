@@ -1,7 +1,7 @@
 export const WORD_CATEGORIES = {
   programming: {
     name: 'Programming Languages',
-    words: ['SWIFT', 'SCALA', 'BASIC', 'FLASH', 'RUST'],
+    words: ['SWIFT', 'SCALA', 'BASIC', 'COBOL', 'ALGOL'],
     emoji: '💻'
   },
   animals: {
@@ -20,7 +20,7 @@ export const WORD_CATEGORIES = {
   },
   movies: {
     name: 'Movies',
-    words: ['ALIEN', 'JAWS', 'ROCKY', 'GHOST', 'SPEED'],
+    words: ['ALIEN', 'SHREK', 'ROCKY', 'GHOST', 'SPEED'],
     emoji: '🎬'
   },
   music: {
@@ -55,7 +55,7 @@ export const WORD_CATEGORIES = {
   },
   cities: {
     name: 'Cities',
-    words: ['PARIS', 'TOKYO', 'DUBAI', 'MIAMI', 'ROME'],
+    words: ['PARIS', 'TOKYO', 'DUBAI', 'MIAMI', 'DELHI'],
     emoji: '🏙️'
   },
   jobs: {
@@ -85,12 +85,12 @@ export const WORD_CATEGORIES = {
   },
   herbs: {
     name: 'Herbs',
-    words: ['BASIL', 'THYME', 'MINT', 'SAGE', 'CHIVE'],
+    words: ['BASIL', 'THYME', 'CUMIN', 'ANISE', 'CHIVE'],
     emoji: '🌿'
   },
   drinks: {
     name: 'Drinks',
-    words: ['WATER', 'SODA', 'JUICE', 'LAGER', 'WINE'],
+    words: ['WATER', 'CIDER', 'JUICE', 'LAGER', 'BRANDY'],
     emoji: '🥤'
   },
   science: {
@@ -105,7 +105,7 @@ export const WORD_CATEGORIES = {
   },
   fruits: {
     name: 'Fruits',
-    words: ['APPLE', 'MANGO', 'PEACH', 'GRAPE', 'PLUM'],
+    words: ['APPLE', 'MANGO', 'PEACH', 'GRAPE', 'MELON'],
     emoji: '🍎'
   },
   dance: {
@@ -115,7 +115,7 @@ export const WORD_CATEGORIES = {
   },
   gems: {
     name: 'Gems',
-    words: ['PEARL', 'RUBY', 'OPAL', 'AMBER', 'TOPAZ'],
+    words: ['PEARL', 'JEWEL', 'CORAL', 'AMBER', 'TOPAZ'],
     emoji: '💎'
   },
   ocean: {
