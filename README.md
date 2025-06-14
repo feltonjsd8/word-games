@@ -68,3 +68,64 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# Word Games
+
+A React-based collection of word games including Hangman and Wordle.
+
+## Features
+
+- Two classic word games in one application
+- 25 different categories with 5 words each
+- Category-based gameplay
+- Progress tracking
+- Clean, modern UI
+
+## Games
+
+### Hangman
+- Classic hangman gameplay
+- Category selection
+- Visual hangman display
+- Clue system
+
+### Wordle
+- Wordle-style word guessing
+- Color-coded feedback
+- Category-based words
+- Progress tracking per category
+
+## Technologies
+
+- React
+- JavaScript
+- CSS
+- HTML
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/feltonjsd/word-games.git
+
+# Navigate to project directory
+cd word-games
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
+```
+
+## Usage
+
+Select a game from the main menu, then choose a category to begin playing. Track your progress across different categories and try to complete them all!
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
