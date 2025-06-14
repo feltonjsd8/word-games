@@ -68,15 +68,24 @@
 }
 
 .wordle-tile.flip {
-  animation: flip 0.6s ease-in-out;
+  animation: flip 0.6s ease-in-out forwards;
   transform-origin: center;
 }
 
 @keyframes flip {
   0% {
     transform: rotateX(0deg);
+    background-color: white;
+    border-color: #dee2e6;
+    color: black;
   }
-  50% {
+  45% {
+    transform: rotateX(90deg);
+    background-color: white;
+    border-color: #dee2e6;
+    color: black;
+  }
+  55% {
     transform: rotateX(90deg);
   }
   100% {

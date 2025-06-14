@@ -142,9 +142,11 @@ const Wordle = ({ onBackToMenu }) => {
         newLetterStates[letter] = 'incorrect';
       }
     }
-    setLetterStates(newLetterStates);
-
-    if (currentGuess === targetWord) {
+    setLetterStates(newLetterStates);    
+    const isCorrect = currentGuess === targetWord;
+    
+    if (isCorrect) {
+      setGameOver(true);
       // Update category progress
       setCategoryProgress(prev => ({
         ...prev,
@@ -154,9 +156,12 @@ const Wordle = ({ onBackToMenu }) => {
         }
       }));
 
-      showMessage('Correct! Starting new category...');
+      // Show success message after a brief delay to allow animation to complete
+      setTimeout(() => {
+        showMessage('Correct! Starting new category...');
+      }, 1500);
       
-      // Select new random category after brief delay
+      // Select new random category after animation and message
       setTimeout(() => {
         const newCategory = getRandomCategory();
         selectCategory(newCategory);
@@ -166,7 +171,7 @@ const Wordle = ({ onBackToMenu }) => {
         setLetterStates({});
         setGameOver(false);
         setEvaluations(Array(6).fill(null));
-      }, 2000);
+      }, 3000);
     } else if (currentRow === 5) {
       setGameOver(true);
       showMessage(`Game Over! The word was ${targetWord}`);
@@ -191,20 +196,27 @@ const Wordle = ({ onBackToMenu }) => {
   const showMessage = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 2000);
-  };
-
-  const getTileClass = (letter, index, rowIndex) => {
+  };  const getTileClass = (letter, index, rowIndex) => {
     if (rowIndex > currentRow) return '';
-    if (rowIndex === currentRow) return '';
     
     const classes = [];
-    const evaluation = evaluations[rowIndex];
-    if (evaluation) {
-      classes.push(evaluation[index]);
+    
+    // Add evaluation classes for submitted rows
+    if (rowIndex < currentRow) {
+      const evaluation = evaluations[rowIndex];
+      if (evaluation) {
+        classes.push(evaluation[index]);
+      }
     }
     
-    if (rowIndex === currentRow - 1) {
+    // Add flip animation class for the last submitted row
+    if (rowIndex === currentRow - 1 || (rowIndex === currentRow && gameOver)) {
       classes.push('flip');
+    }
+    
+    // Handle correct guess case
+    if (rowIndex === currentRow && evaluations[rowIndex]) {
+      classes.push(evaluations[rowIndex][index]);
     }
     
     return classes.join(' ');
