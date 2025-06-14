@@ -13,6 +13,7 @@ const Wordle = ({ onBackToMenu }) => {
   const [currentCategory, setCurrentCategory] = useState(null);
   const [categoryProgress, setCategoryProgress] = useState({});
   const [showCategorySelect, setShowCategorySelect] = useState(true);
+  const [evaluations, setEvaluations] = useState(Array(6).fill(null));
 
   const getRandomCategory = () => {
     const categories = Object.keys(WORD_CATEGORIES);
@@ -88,33 +89,59 @@ const Wordle = ({ onBackToMenu }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentGuess, gameOver]);
 
+  const evaluateGuess = (guess, target) => {
+    const evaluation = Array(5).fill('incorrect');
+    const targetLetters = target.split('');
+    const guessLetters = guess.split('');
+    
+    // First pass: mark correct positions
+    for (let i = 0; i < 5; i++) {
+      if (guessLetters[i] === targetLetters[i]) {
+        evaluation[i] = 'correct';
+        targetLetters[i] = null;
+        guessLetters[i] = null;
+      }
+    }
+    
+    // Second pass: mark wrong positions
+    for (let i = 0; i < 5; i++) {
+      if (guessLetters[i] === null) continue;
+      
+      const targetIndex = targetLetters.indexOf(guessLetters[i]);
+      if (targetIndex !== -1) {
+        evaluation[i] = 'wrong-position';
+        targetLetters[targetIndex] = null;
+      }
+    }
+    
+    return evaluation;
+  };
+
   // Modify submitGuess to track category progress
   const submitGuess = () => {
     const newGuesses = [...guesses];
     newGuesses[currentRow] = currentGuess;
     setGuesses(newGuesses);
 
+    // Evaluate the current guess
+    const evaluation = evaluateGuess(currentGuess, targetWord);
+    const newEvaluations = [...evaluations];
+    newEvaluations[currentRow] = evaluation;
+    setEvaluations(newEvaluations);
+
     // Update letter states
     const newLetterStates = { ...letterStates };
-    
-    // First, mark incorrect letters
     for (let i = 0; i < currentGuess.length; i++) {
       const letter = currentGuess[i];
-      if (!targetWord.includes(letter)) {
+      const status = evaluation[i];
+      if (status === 'correct') {
+        newLetterStates[letter] = 'correct';
+      } else if (status === 'wrong-position' && newLetterStates[letter] !== 'correct') {
+        newLetterStates[letter] = 'wrong-position';
+      } else if (!newLetterStates[letter]) {
         newLetterStates[letter] = 'incorrect';
       }
     }
-    
-    // Then, mark correct letters and positions
-    for (let i = 0; i < currentGuess.length; i++) {
-      const letter = currentGuess[i];
-      if (letter === targetWord[i]) {
-        newLetterStates[letter] = 'correct';
-      } else if (targetWord.includes(letter) && newLetterStates[letter] !== 'correct') {
-        newLetterStates[letter] = 'wrong-position';
-      }
-    }
-    
     setLetterStates(newLetterStates);
 
     if (currentGuess === targetWord) {
@@ -138,6 +165,7 @@ const Wordle = ({ onBackToMenu }) => {
         setCurrentGuess('');
         setLetterStates({});
         setGameOver(false);
+        setEvaluations(Array(6).fill(null));
       }, 2000);
     } else if (currentRow === 5) {
       setGameOver(true);
@@ -152,6 +180,7 @@ const Wordle = ({ onBackToMenu }) => {
         setCurrentGuess('');
         setLetterStates({});
         setGameOver(false);
+        setEvaluations(Array(6).fill(null));
       }, 3000);
     } else {
       setCurrentRow(prev => prev + 1);
@@ -169,12 +198,9 @@ const Wordle = ({ onBackToMenu }) => {
     if (rowIndex === currentRow) return '';
     
     const classes = [];
-    if (letter === targetWord[index]) {
-      classes.push('correct');
-    } else if (targetWord.includes(letter)) {
-      classes.push('wrong-position');
-    } else {
-      classes.push('incorrect');
+    const evaluation = evaluations[rowIndex];
+    if (evaluation) {
+      classes.push(evaluation[index]);
     }
     
     if (rowIndex === currentRow - 1) {
