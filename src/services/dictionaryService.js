@@ -47,123 +47,174 @@ export const getWordDefinition = async (word) => {
 };
 
 export const getDictionaryWords = async (category) => {
-    // Static list of valid 5-letter country names
-    const countryList = [
-        'ITALY', 'INDIA', 'CHINA', 'SPAIN', 'CHILE',
-        'KENYA', 'JAPAN', 'WALES', 'KOREA', 'SUDAN',
-        'SYRIA', 'YEMEN', 'QATAR', 'MALTA', 'CONGO',
-        'GABON', 'HAITI', 'LIBYA', 'NEPAL', 'PALAU'
-    ];
+    // Static word lists as fallback
+    const staticWords = {
+        games: ['MARIO', 'SONIC', 'ZELDA', 'CHESS', 'POKER'],
+        dance: ['SALSA', 'TWIST', 'WALTZ', 'TANGO', 'SWING'],
+        ocean: ['CORAL', 'WAVES', 'WHALE', 'CRAB', 'SHELL'],
+        cities: ['PARIS', 'TOKYO', 'DUBAI', 'MIAMI', 'DELHI'],
+        jobs: ['NURSE', 'PILOT', 'ACTOR', 'JUDGE', 'BAKER'],
+        fashion: ['DRESS', 'SKIRT', 'SCARF', 'BOOTS', 'JEANS'],
+        books: ['NOVEL', 'STORY', 'PROSE', 'BIBLE', 'MANGA'],
+        weather: ['RAINY', 'SUNNY', 'WINDY', 'FOGGY', 'STORM'],
+        tools: ['DRILL', 'PLIER', 'CHISEL', 'LEVEL', 'RAZOR'],
+        herbs: ['BASIL', 'THYME', 'CUMIN', 'ANISE', 'CHIVE'],
+        drinks: ['WATER', 'CIDER', 'JUICE', 'LAGER', 'BRANDY'],
+        fruits: ['APPLE', 'MANGO', 'PEACH', 'GRAPE', 'MELON'],
+        gems: ['PEARL', 'JEWEL', 'ONYX', 'AMBER', 'TOPAZ']
+    };
 
     try {
         const categoryConfig = {
             programming: {
-                query: 'rel_trg=programming+coding+software&topics=computing',
+                queries: ['rel_trg=programming', 'topics=computing'],
                 exclude: ['words', 'print', 'input', 'files', 'types']
             },
             animals: {
-                query: 'rel_trg=animal+species+mammal&topics=animals',
+                queries: ['rel_trg=animal', 'topics=animals'],
                 exclude: ['breed', 'group', 'class', 'foods', 'young']
             },
             foods: {
-                query: 'rel_trg=food+dish+meal&topics=cuisine',
-                exclude: ['plate', 'drink', 'sweet', 'serve', 'tasty']
+                queries: ['rel_trg=food', 'topics=cuisine'],
+                exclude: ['plate', 'drink', 'sweet', 'serve', 'tasty'
+                ]
             },
             sports: {
-                query: 'rel_trg=sport+athlete+team&topics=sports',
+                queries: ['rel_trg=sport', 'topics=sports'],
                 exclude: ['score', 'point', 'match', 'games', 'plays']
             },
             movies: {
-                query: 'rel_trg=movie+actor+film&topics=cinema',
+                queries: ['rel_trg=movie', 'topics=cinema'],
                 exclude: ['scene', 'stage', 'sound', 'video', 'watch']
             },
             music: {
-                query: 'rel_trg=music+instrument+song&topics=music',
+                queries: ['rel_trg=music', 'topics=music'],
                 exclude: ['sound', 'noise', 'track', 'audio', 'notes']
             },
             space: {
-                query: 'rel_trg=space+planet+star&topics=astronomy',
+                queries: ['rel_trg=space', 'topics=astronomy'],
                 exclude: ['light', 'shine', 'orbit', 'float', 'space']
             },
             nature: {
-                query: 'rel_trg=nature+forest+plant&topics=nature',
+                queries: ['rel_trg=nature', 'topics=nature'],
                 exclude: ['green', 'grow', 'plant', 'water', 'earth']
             },
             colors: {
-                query: 'rel_trg=color+shade+tone&topics=colors',
+                queries: ['rel_trg=color', 'topics=colors'],
                 exclude: ['light', 'dark', 'toned', 'shade', 'tints']
             },
             cars: {
-                query: 'rel_trg=car+vehicle+brand&topics=automotive',
+                queries: ['rel_trg=car', 'topics=automotive'],
                 exclude: ['wheel', 'speed', 'drive', 'parts', 'rides']
             },
+            games: {
+                queries: ['rel_trg=game', 'topics=gaming'],
+                exclude: ['plays', 'start', 'level', 'stage', 'score']
+            },
+            dance: {
+                queries: ['rel_trg=dance', 'topics=dance'],
+                exclude: ['moves', 'music', 'style', 'steps', 'floor']
+            },
+            ocean: {
+                queries: ['rel_trg=ocean', 'topics=ocean'],
+                exclude: ['water', 'depth', 'float', 'drops', 'units']
+            },
+            cities: {
+                queries: ['rel_trg=city', 'topics=geography'],
+                exclude: ['urban', 'metro', 'areas', 'zones', 'rural']
+            },
+            jobs: {
+                queries: ['rel_trg=job', 'topics=employment'],
+                exclude: ['works', 'tasks', 'roles', 'skill', 'needs']
+            },
+            fashion: {
+                queries: ['rel_trg=fashion', 'topics=fashion'],
+                exclude: ['trend', 'style', 'cloth', 'wear', 'looks']
+            },
+            books: {
+                queries: ['rel_trg=book', 'topics=literature'],
+                exclude: ['pages', 'print', 'reads', 'words', 'texts']
+            },
+            weather: {
+                queries: ['rel_trg=weather', 'topics=meteorology'],
+                exclude: ['cloud', 'storm', 'winds', 'rains', 'skies']
+            },
+            tools: {
+                queries: ['rel_trg=tool', 'topics=tools'],
+                exclude: ['works', 'build', 'makes', 'fixes', 'parts']
+            },
+            herbs: {
+                queries: ['rel_trg=herb', 'topics=botany'],
+                exclude: ['plant', 'dried', 'grows', 'leafy', 'green']
+            },
+            drinks: {
+                queries: ['rel_trg=drink', 'topics=beverages'],
+                exclude: ['water', 'thirst', 'glass', 'fluid', 'sips']
+            },
+            fruits: {
+                queries: ['rel_trg=fruit', 'topics=fruits'],
+                exclude: ['sweet', 'juice', 'fresh', 'plant', 'seed']
+            },
+            gems: {
+                queries: ['rel_trg=gem', 'topics=mineralogy'],
+                exclude: ['rock', 'stone', 'shine', 'glow', 'cuts']
+            },
             countries: {
-                queries: [
-                    'rel_jja=national+sovereign&topics=nations',
-                    'ml=capital+country&topics=geography'
-                ],
-                exclude: ['world', 'peace', 'state', 'union', 'north', 'south', 'place', 'earth', 'least', 'local', 'front', 'inter', 'third', 'cross', 'supra', 'multi', 'quasi', 'intra']
+                queries: ['rel_jja=national', 'topics=nations'],
+                exclude: ['world', 'peace', 'state', 'union', 'north', 'south']
             }
-        };        if (!categoryConfig[category]) {
-            throw new Error(`Invalid category: ${category}`);
+        };
+
+        if (!categoryConfig[category]) {
+            console.warn(`No configuration found for category: ${category}`);
+            return staticWords[category] || [];
         }
 
-        // Special handling for countries category
-        if (category === 'countries') {
-            const config = categoryConfig[category];
-            const apiWords = new Set();
-
-            // Try each query in sequence
-            for (const query of config.queries) {
-                try {
-                    const response = await fetch(`${DATAMUSE_API_URL}?${query}&max=100&md=f`);
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch words for query: ${query}`);
-                        continue;
-                    }
-                    const words = await response.json();
-                    
-                    // Filter and add valid words to the set
-                    words
-                        .filter(word => {
-                            const wordStr = word.word.toUpperCase();
-                            return word.word.length === 5 && 
-                                   !isCommonWord(wordStr) && 
-                                   !config.exclude.includes(word.word.toLowerCase());
-                        })
-                        .forEach(word => apiWords.add(word.word.toUpperCase()));
-                } catch (error) {
-                    console.warn(`Error fetching words for query: ${query}`, error);
-                }
-            }
-
-            // Combine API results with static list, remove duplicates
-            const allWords = [...new Set([...apiWords, ...countryList])];
-            return allWords.length > 0 ? allWords : countryList;
-        }
-
-        // Regular category handling
         const config = categoryConfig[category];
-        const response = await fetch(`${DATAMUSE_API_URL}?${config.query}&max=100&md=f`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch words from Datamuse API');
+        const apiWords = new Set();
+
+        // Try each query in sequence
+        for (const query of config.queries) {
+            try {
+                console.log(`Fetching words for ${category} with query: ${query}`);
+                const response = await fetch(`${DATAMUSE_API_URL}?${query}&max=100&md=f`);
+                
+                if (!response.ok) {
+                    console.warn(`Failed to fetch words for query: ${query}`);
+                    continue;
+                }
+
+                const words = await response.json();
+                console.log(`Received ${words.length} words from API for ${category}`);
+                
+                // Filter and add valid words to the set
+                words
+                    .filter(word => {
+                        const wordStr = word.word.toUpperCase();
+                        return word.word.length === 5 && 
+                               !isCommonWord(wordStr) && 
+                               !config.exclude.includes(word.word.toLowerCase());
+                    })
+                    .forEach(word => apiWords.add(word.word.toUpperCase()));
+            } catch (error) {
+                console.warn(`Error fetching words for query: ${query}`, error);
+            }
         }
 
-        const words = await response.json();
-        
-        // Filter words that are exactly 5 letters long and convert to uppercase
-        const fiveLetterWords = words
-            .filter(word => word.word.length === 5 && !isCommonWord(word.word))
-            .map(word => word.word.toUpperCase());
+        const allWords = [...apiWords];
+        console.log(`Found ${allWords.length} valid words for category ${category}`);
 
-        if (fiveLetterWords.length === 0) {
-            throw new Error(`No valid 5-letter words found for category: ${category}`);
+        // If no API words found, use static words as fallback
+        if (allWords.length === 0) {
+            console.log(`Using static words for category ${category}`);
+            return staticWords[category] || [];
         }
 
-        return fiveLetterWords;
+        return allWords;
     } catch (error) {
-        console.error('Error fetching dictionary words:', error);
-        return category === 'countries' ? countryList : [];
+        console.error('Error in getDictionaryWords:', error);
+        // Return static words as fallback
+        return staticWords[category] || [];
     }
 };
 
