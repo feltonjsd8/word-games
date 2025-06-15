@@ -279,3 +279,20 @@
 .category-switch:hover {
   background: #45a049;
 }
+
+.loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 8px;
+  z-index: 1000;
+}
+
+.category-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

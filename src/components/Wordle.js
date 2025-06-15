@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Wordle.css';
 import { WORD_CATEGORIES } from './wordleCategories';
+import { getRandomWord } from '../services/dictionaryService';
 
 const Wordle = ({ onBackToMenu }) => {
   const [guesses, setGuesses] = useState(Array(6).fill(''));
@@ -14,6 +15,37 @@ const Wordle = ({ onBackToMenu }) => {
   const [categoryProgress, setCategoryProgress] = useState({});
   const [showCategorySelect, setShowCategorySelect] = useState(true);
   const [evaluations, setEvaluations] = useState(Array(6).fill(null));
+  const [revealedLetters, setRevealedLetters] = useState(Array(6).fill(Array(5).fill(false)));
+  const [isLoading, setIsLoading] = useState(false);
+
+  const selectCategory = async (category) => {
+    setCurrentCategory(category);
+    setShowCategorySelect(false);
+    setIsLoading(true);
+
+    // Initialize progress for this category if not exists
+    if (!categoryProgress[category]) {
+      setCategoryProgress(prev => ({
+        ...prev,
+        [category]: {
+          completed: [],
+          total: 100 // Set a default total for progress tracking
+        }
+      }));
+    }
+
+    try {
+      const excludedWords = categoryProgress[category]?.completed || [];
+      const newWord = await getRandomWord(category, excludedWords);
+      setTargetWord(newWord);
+    } catch (error) {
+      console.error('Error selecting word:', error);
+      showMessage('Error loading word. Please try again.');
+      setShowCategorySelect(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getRandomCategory = () => {
     const categories = Object.keys(WORD_CATEGORIES);
@@ -22,26 +54,26 @@ const Wordle = ({ onBackToMenu }) => {
   };
 
   // Replace existing WORD_LIST with category-based selection
-  const selectCategory = (category) => {
-    setCurrentCategory(category);
-    setShowCategorySelect(false);
-    // Initialize progress for this category if not exists
-    if (!categoryProgress[category]) {
-      setCategoryProgress(prev => ({
-        ...prev,
-        [category]: {
-          completed: [],
-          total: WORD_CATEGORIES[category].words.length
-        }
-      }));
-    }
-    // Select random unfinished word from category
-    const availableWords = WORD_CATEGORIES[category].words.filter(
-      word => !categoryProgress[category]?.completed.includes(word)
-    );
-    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
-    setTargetWord(randomWord);
-  };
+  // const selectCategory = (category) => {
+  //   setCurrentCategory(category);
+  //   setShowCategorySelect(false);
+  //   // Initialize progress for this category if not exists
+  //   if (!categoryProgress[category]) {
+  //     setCategoryProgress(prev => ({
+  //       ...prev,
+  //       [category]: {
+  //         completed: [],
+  //         total: WORD_CATEGORIES[category].words.length
+  //       }
+  //     }));
+  //   }
+  //   // Select random unfinished word from category
+  //   const availableWords = WORD_CATEGORIES[category].words.filter(
+  //     word => !categoryProgress[category]?.completed.includes(word)
+  //   );
+  //   const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+  //   setTargetWord(randomWord);
+  // };
 
   useEffect(() => {
     // Pick a random word when game starts
@@ -242,15 +274,17 @@ const Wordle = ({ onBackToMenu }) => {
               key={key}
               className="category-button"
               onClick={() => selectCategory(key)}
+              disabled={isLoading}
             >
               <span className="category-emoji">{category.emoji}</span>
               <span className="category-name">{category.name}</span>
               <span className="category-progress">
-                {categoryProgress[key]?.completed.length || 0}/{category.words.length}
+                {categoryProgress[key]?.completed.length || 0} words completed
               </span>
             </button>
           ))}
         </div>
+        {isLoading && <div className="loading">Loading words...</div>}
       </div>
     );
   }
