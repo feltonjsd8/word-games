@@ -19,8 +19,8 @@ const Wordle = ({ onBackToMenu }) => {
   const [revealedLetters, setRevealedLetters] = useState(Array(6).fill(Array(5).fill(false)));
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [wordDefinition, setWordDefinition] = useState(null);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [wordDefinition, setWordDefinition] = useState(null);  const [isSuccess, setIsSuccess] = useState(false);
+  const [completedWord, setCompletedWord] = useState('');
 
   const selectCategory = async (category) => {
     setCurrentCategory(category);
@@ -156,25 +156,24 @@ const Wordle = ({ onBackToMenu }) => {
   const handleNextWord = async () => {
     setShowModal(false);
     const newCategory = getRandomCategory();
-    await selectCategory(newCategory);
-    setCurrentRow(0);
+    await selectCategory(newCategory);    setCurrentRow(0);
     setGuesses(Array(6).fill(''));
     setCurrentGuess('');
     setLetterStates({});
     setGameOver(false);
     setEvaluations(Array(6).fill(null));
     setRevealedLetters(Array(6).fill(Array(5).fill(false)));
+    setCompletedWord('');
   };
-
-  const showGameEndModal = async (success) => {
+  const showGameEndModal = async (success, word) => {
     setIsSuccess(success);
     try {
-      const definition = await getWordDefinition(targetWord);
+      const definition = await getWordDefinition(word);
       setWordDefinition(definition);
     } catch (error) {
       console.error('Error fetching word definition:', error);
       setWordDefinition({
-        word: targetWord,
+        word: word,
         definitions: [{ definition: 'Definition not available' }]
       });
     }
@@ -222,12 +221,11 @@ const Wordle = ({ onBackToMenu }) => {
         setRevealedLetters(updatedRevealedLetters);
       }, i * 200);
     }
-    setLetterStates(newLetterStates);
-
-    const isCorrect = currentGuess === targetWord;
+    setLetterStates(newLetterStates);    const isCorrect = currentGuess === targetWord;
     
     if (isCorrect) {
       setGameOver(true);
+      setCompletedWord(targetWord);
       setCategoryProgress(prev => ({
         ...prev,
         [currentCategory]: {
@@ -238,13 +236,14 @@ const Wordle = ({ onBackToMenu }) => {
 
       // Show success modal after animation
       setTimeout(() => {
-        showGameEndModal(true);
+        showGameEndModal(true, targetWord);
       }, 1500);
     } else if (currentRow === 5) {
       setGameOver(true);
+      setCompletedWord(targetWord);
       // Show failure modal after animation
       setTimeout(() => {
-        showGameEndModal(false);
+        showGameEndModal(false, targetWord);
       }, 1500);
     } else {
       setCurrentRow(prev => prev + 1);
@@ -379,12 +378,10 @@ const Wordle = ({ onBackToMenu }) => {
             </div>
           ))}
         </div>
-      </div>
-
-      <WordModal
+      </div>      <WordModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        word={targetWord}
+        word={completedWord}
         definition={wordDefinition}
         isSuccess={isSuccess}
         onNextWord={handleNextWord}
