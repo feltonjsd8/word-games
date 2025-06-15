@@ -1,31 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/hangman.css';
-import { CATEGORIES } from './categories';
+import { getRandomWord, getWordDefinition } from '../services/dictionaryService';
 
 const Hangman = ({ onBackToMenu }) => {
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [word, setWord] = useState('');
   const [guessedLetters, setGuessedLetters] = useState([]);
   const [remainingGuesses, setRemainingGuesses] = useState(6);
-  const [showClue, setShowClue] = useState(false);
+  const [showDefinition, setShowDefinition] = useState(false);
+  const [definition, setDefinition] = useState('');
 
-  const selectCategory = (category) => {
-    const categoryWords = Object.keys(CATEGORIES[category].words);
-    const randomWord = categoryWords[Math.floor(Math.random() * categoryWords.length)];
-    setSelectedCategory(category);
-    setWord(randomWord);
+  const startNewGame = async () => {
+    const newWord = await getRandomWord();
+    setWord(newWord);
     setGuessedLetters([]);
     setRemainingGuesses(6);
-    setShowClue(false);
+    setShowDefinition(false);
+    setDefinition('');
   };
 
-  const startNewGame = () => {
-    setSelectedCategory(null);
-    setWord('');
-    setGuessedLetters([]);
-    setRemainingGuesses(6);
-    setShowClue(false);
-  };
+  useEffect(() => {
+    startNewGame();
+  }, []);
 
   const drawHangman = (mistakes) => (
     <svg height="250" width="200">
@@ -76,6 +71,12 @@ const Hangman = ({ onBackToMenu }) => {
     }
   };
 
+  const getHint = async () => {
+    const wordDef = await getWordDefinition(word);
+    setDefinition(wordDef.definitions[0]?.definition || 'No definition available');
+    setShowDefinition(true);
+  };
+
   const maskedWord = word
     .split('')
     .map(letter => guessedLetters.includes(letter) ? letter : '_')
@@ -87,37 +88,13 @@ const Hangman = ({ onBackToMenu }) => {
   const hasWon = !maskedWord.includes('_');
   const mistakes = 6 - remainingGuesses;
 
-  // If no category is selected, show category selection screen
-  if (!selectedCategory) {
-    return (
-      <div className="hangman">
-        <h1>Hangman Game</h1>
-        <div className="category-selection">
-          <div className="category-dropdown">
-            <select 
-              onChange={(e) => selectCategory(e.target.value)}
-              defaultValue=""
-            >
-              <option value="" disabled>Select a category...</option>
-              {Object.keys(CATEGORIES).map(category => (
-                <option key={category} value={category}>
-                  {CATEGORIES[category].name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="hangman">
       <div className="game-header">
         <h1>Hangman Game</h1>
         <div className="header-buttons">
           <button onClick={startNewGame} className="new-game-button">
-            Change Category
+            New Game
           </button>
           <button onClick={onBackToMenu} className="menu-button">
             Back to Menu
@@ -131,15 +108,15 @@ const Hangman = ({ onBackToMenu }) => {
           {!gameOver && !hasWon && (
             <button 
               className="clue-button" 
-              onClick={() => setShowClue(true)}
-              disabled={showClue}
+              onClick={getHint}
+              disabled={showDefinition}
             >
-              Get Clue
+              Get Hint
             </button>
           )}
-          {showClue && (
+          {showDefinition && definition && (
             <p className="clue-text">
-              Clue: {CATEGORIES[selectedCategory].words[word]}
+              Hint: {definition}
             </p>
           )}
         </div>

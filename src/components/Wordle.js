@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Wordle.css';
-import { WORD_CATEGORIES } from './wordleCategories';
 import { getRandomWord, getWordDefinition } from '../services/dictionaryService';
 import WordModal from './WordModal';
 
@@ -12,83 +11,40 @@ const Wordle = ({ onBackToMenu }) => {
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
   const [letterStates, setLetterStates] = useState({});
-  const [currentCategory, setCurrentCategory] = useState(null);
-  const [categoryProgress, setCategoryProgress] = useState({});
-  const [showCategorySelect, setShowCategorySelect] = useState(true);
   const [evaluations, setEvaluations] = useState(Array(6).fill(null));
   const [revealedLetters, setRevealedLetters] = useState(Array(6).fill(Array(5).fill(false)));
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [wordDefinition, setWordDefinition] = useState(null);  const [isSuccess, setIsSuccess] = useState(false);
+  const [wordDefinition, setWordDefinition] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [completedWord, setCompletedWord] = useState('');
 
-  const selectCategory = async (category) => {
-    setCurrentCategory(category);
-    setShowCategorySelect(false);
+  const startNewGame = async () => {
     setIsLoading(true);
-
-    // Initialize progress for this category if not exists
-    if (!categoryProgress[category]) {
-      setCategoryProgress(prev => ({
-        ...prev,
-        [category]: {
-          completed: [],
-          total: 100 // Set a default total for progress tracking
-        }
-      }));
-    }
-
     try {
-      const excludedWords = categoryProgress[category]?.completed || [];
-      const newWord = await getRandomWord(category, excludedWords);
+      const newWord = await getRandomWord();
       setTargetWord(newWord);
+      setGuesses(Array(6).fill(''));
+      setCurrentGuess('');
+      setCurrentRow(0);
+      setGameOver(false);
+      setMessage('');
+      setLetterStates({});
+      setEvaluations(Array(6).fill(null));
+      setRevealedLetters(Array(6).fill(Array(5).fill(false)));
+      setIsSuccess(false);
+      setCompletedWord('');
     } catch (error) {
       console.error('Error selecting word:', error);
       showMessage('Error loading word. Please try again.');
-      setShowCategorySelect(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getRandomCategory = () => {
-    const categories = Object.keys(WORD_CATEGORIES);
-    const randomIndex = Math.floor(Math.random() * categories.length);
-    return categories[randomIndex];
-  };
-
-  // Replace existing WORD_LIST with category-based selection
-  // const selectCategory = (category) => {
-  //   setCurrentCategory(category);
-  //   setShowCategorySelect(false);
-  //   // Initialize progress for this category if not exists
-  //   if (!categoryProgress[category]) {
-  //     setCategoryProgress(prev => ({
-  //       ...prev,
-  //       [category]: {
-  //         completed: [],
-  //         total: WORD_CATEGORIES[category].words.length
-  //       }
-  //     }));
-  //   }
-  //   // Select random unfinished word from category
-  //   const availableWords = WORD_CATEGORIES[category].words.filter(
-  //     word => !categoryProgress[category]?.completed.includes(word)
-  //   );
-  //   const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
-  //   setTargetWord(randomWord);
-  // };
-
   useEffect(() => {
-    // Pick a random word when game starts
-    if (currentCategory) {
-      const availableWords = WORD_CATEGORIES[currentCategory].words.filter(
-        word => !categoryProgress[currentCategory]?.completed.includes(word)
-      );
-      const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
-      setTargetWord(randomWord);
-    }
-  }, [currentCategory, categoryProgress]);
+    startNewGame();
+  }, []);
 
   const handleKeyPress = (key) => {
     if (gameOver) return;
@@ -98,7 +54,6 @@ const Wordle = ({ onBackToMenu }) => {
         showMessage('Word must be 5 letters');
         return;
       }
-      // Remove the word list validation
       submitGuess();
     } else if (key === 'BACKSPACE') {
       setCurrentGuess(prev => prev.slice(0, -1));
@@ -155,15 +110,7 @@ const Wordle = ({ onBackToMenu }) => {
 
   const handleNextWord = async () => {
     setShowModal(false);
-    const newCategory = getRandomCategory();
-    await selectCategory(newCategory);    setCurrentRow(0);
-    setGuesses(Array(6).fill(''));
-    setCurrentGuess('');
-    setLetterStates({});
-    setGameOver(false);
-    setEvaluations(Array(6).fill(null));
-    setRevealedLetters(Array(6).fill(Array(5).fill(false)));
-    setCompletedWord('');
+    await startNewGame();
   };
   const showGameEndModal = async (success, word) => {
     setIsSuccess(success);
@@ -226,13 +173,6 @@ const Wordle = ({ onBackToMenu }) => {
     if (isCorrect) {
       setGameOver(true);
       setCompletedWord(targetWord);
-      setCategoryProgress(prev => ({
-        ...prev,
-        [currentCategory]: {
-          ...prev[currentCategory],
-          completed: [...prev[currentCategory].completed, targetWord]
-        }
-      }));
 
       // Show success modal after animation
       setTimeout(() => {
@@ -284,51 +224,15 @@ const Wordle = ({ onBackToMenu }) => {
     '--flip-delay': `${index * 200}ms`
   });
 
-  // Add category selection screen
-  if (showCategorySelect) {
-    return (
-      <div className="wordle">
-        <div className="game-header">
-          <h1>Wordle Categories</h1>
-          <button onClick={onBackToMenu} className="menu-button">
-            Back to Menu
-          </button>
-        </div>
-        <div className="category-grid">
-          {Object.entries(WORD_CATEGORIES).map(([key, category]) => (
-            <button
-              key={key}
-              className="category-button"
-              onClick={() => selectCategory(key)}
-              disabled={isLoading}
-            >
-              <span className="category-emoji">{category.emoji}</span>
-              <span className="category-name">{category.name}</span>
-              <span className="category-progress">
-                {categoryProgress[key]?.completed.length || 0} words completed
-              </span>
-            </button>
-          ))}
-        </div>
-        {isLoading && <div className="loading">Loading words...</div>}
-      </div>
-    );
-  }
-
-  // Add category info to game header
   return (
     <div className="wordle">
       <div className="game-header">
         <div className="header-content">
-          <h1>Wordle: {WORD_CATEGORIES[currentCategory].name}</h1>
-          <div className="category-info">
-            {WORD_CATEGORIES[currentCategory].emoji}
-            Progress: {categoryProgress[currentCategory]?.completed.length}/{WORD_CATEGORIES[currentCategory].total}
-          </div>
+          <h1>Wordle</h1>
         </div>
         <div className="header-buttons">
-          <button onClick={() => setShowCategorySelect(true)} className="category-switch">
-            Change Category
+          <button onClick={startNewGame} className="new-game-button">
+            New Game
           </button>
           <button onClick={onBackToMenu} className="menu-button">
             Back to Menu
@@ -337,6 +241,7 @@ const Wordle = ({ onBackToMenu }) => {
       </div>
 
       {message && <div className="message">{message}</div>}
+      {isLoading && <div className="loading">Loading words...</div>}
 
       <div className="game-container">
         <div className="wordle-grid">
