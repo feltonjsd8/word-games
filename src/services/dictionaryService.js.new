@@ -1,6 +1,7 @@
 const DATAMUSE_API_URL = 'https://api.datamuse.com/words';
 const DICTIONARY_API_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
+// Filter out common, non-specific words
 const isCommonWord = (word) => {
     const commonWords = new Set([
         'WORDS', 'THING', 'STUFF', 'ITEMS', 'TYPES',
@@ -20,7 +21,6 @@ export const getWordDefinition = async (word) => {
         }
         const data = await response.json();
         
-        // Extract the most relevant information
         const definitions = data[0]?.meanings?.map(meaning => ({
             partOfSpeech: meaning.partOfSpeech,
             definition: meaning.definitions[0].definition,
@@ -47,15 +47,8 @@ export const getWordDefinition = async (word) => {
 };
 
 export const getDictionaryWords = async (category) => {
-    // Static list of valid 5-letter country names
-    const countryList = [
-        'ITALY', 'INDIA', 'CHINA', 'SPAIN', 'CHILE',
-        'KENYA', 'JAPAN', 'WALES', 'KOREA', 'SUDAN',
-        'SYRIA', 'YEMEN', 'QATAR', 'MALTA', 'CONGO',
-        'GABON', 'HAITI', 'LIBYA', 'NEPAL', 'PALAU'
-    ];
-
     try {
+        // Enhanced category configuration with better queries and exclusions
         const categoryConfig = {
             programming: {
                 query: 'rel_trg=programming+coding+software&topics=computing',
@@ -96,74 +89,34 @@ export const getDictionaryWords = async (category) => {
             cars: {
                 query: 'rel_trg=car+vehicle+brand&topics=automotive',
                 exclude: ['wheel', 'speed', 'drive', 'parts', 'rides']
-            },
-            countries: {
-                queries: [
-                    'rel_jja=national+sovereign&topics=nations',
-                    'ml=capital+country&topics=geography'
-                ],
-                exclude: ['world', 'peace', 'state', 'union', 'north', 'south', 'place', 'earth', 'least', 'local', 'front', 'inter', 'third', 'cross', 'supra', 'multi', 'quasi', 'intra']
             }
-        };        if (!categoryConfig[category]) {
-            throw new Error(`Invalid category: ${category}`);
-        }
+        };
 
-        // Special handling for countries category
-        if (category === 'countries') {
-            const config = categoryConfig[category];
-            const apiWords = new Set();
-
-            // Try each query in sequence
-            for (const query of config.queries) {
-                try {
-                    const response = await fetch(`${DATAMUSE_API_URL}?${query}&max=100&md=f`);
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch words for query: ${query}`);
-                        continue;
-                    }
-                    const words = await response.json();
-                    
-                    // Filter and add valid words to the set
-                    words
-                        .filter(word => {
-                            const wordStr = word.word.toUpperCase();
-                            return word.word.length === 5 && 
-                                   !isCommonWord(wordStr) && 
-                                   !config.exclude.includes(word.word.toLowerCase());
-                        })
-                        .forEach(word => apiWords.add(word.word.toUpperCase()));
-                } catch (error) {
-                    console.warn(`Error fetching words for query: ${query}`, error);
-                }
-            }
-
-            // Combine API results with static list, remove duplicates
-            const allWords = [...new Set([...apiWords, ...countryList])];
-            return allWords.length > 0 ? allWords : countryList;
-        }
-
-        // Regular category handling
-        const config = categoryConfig[category];
+        const config = categoryConfig[category] || {
+            query: `rel_trg=${category}&topics=${category}`,
+            exclude: []
+        };
+        
         const response = await fetch(`${DATAMUSE_API_URL}?${config.query}&max=100&md=f`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch words from Datamuse API');
-        }
-
         const words = await response.json();
         
-        // Filter words that are exactly 5 letters long and convert to uppercase
+        // Apply strict filtering
         const fiveLetterWords = words
-            .filter(word => word.word.length === 5 && !isCommonWord(word.word))
+            .filter(word => {
+                const upperWord = word.word.toUpperCase();
+                return (
+                    word.word.length === 5 &&
+                    /^[A-Z]+$/i.test(word.word) && // only letters
+                    !config.exclude.includes(word.word.toLowerCase()) &&
+                    !isCommonWord(upperWord)
+                );
+            })
             .map(word => word.word.toUpperCase());
 
-        if (fiveLetterWords.length === 0) {
-            throw new Error(`No valid 5-letter words found for category: ${category}`);
-        }
-
-        return fiveLetterWords;
+        return [...new Set(fiveLetterWords)];
     } catch (error) {
         console.error('Error fetching dictionary words:', error);
-        return category === 'countries' ? countryList : [];
+        return ['HELLO', 'WORLD', 'REACT', 'QUICK', 'JUMPS'];
     }
 };
 
@@ -172,30 +125,24 @@ const wordCache = new Map();
 
 export const getRandomWord = async (category, excludeWords = []) => {
     try {
-        // Try to get words from cache first
         let words = wordCache.get(category);
         
-        // If not in cache or running low on words, fetch new ones
         if (!words || words.length < 10) {
             words = await getDictionaryWords(category);
             wordCache.set(category, words);
         }
 
-        // Filter out excluded words
         const availableWords = words.filter(word => !excludeWords.includes(word));
 
-        // If we're running out of words, fetch new ones
         if (availableWords.length < 5) {
             words = await getDictionaryWords(category);
             wordCache.set(category, words);
             return getRandomWord(category, excludeWords);
         }
 
-        // Get a random word from the available words
         const randomIndex = Math.floor(Math.random() * availableWords.length);
         const selectedWord = availableWords[randomIndex];
 
-        // Remove the selected word from the cache to avoid repetition
         wordCache.set(category, words.filter(w => w !== selectedWord));
 
         return selectedWord;

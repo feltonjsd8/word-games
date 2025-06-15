@@ -15,7 +15,7 @@ export const WORD_CATEGORIES = {
     emoji: '🍔'
   },  sports: {
     name: 'Sports',
-    words: ['RUGBY', 'CHESS', 'KENDO', 'BOWLS', 'SQUASH'],
+    words: ['RUGBY', 'BOXER', 'KENDO', 'BOWLS', 'SQUASH'],
     emoji: '⚽'
   },
   movies: {
@@ -77,10 +77,9 @@ export const WORD_CATEGORIES = {
     name: 'Weather',
     words: ['RAINY', 'SUNNY', 'WINDY', 'FOGGY', 'STORM'],
     emoji: '🌤️'
-  },
-  tools: {
+  },  tools: {
     name: 'Tools',
-    words: ['DRILL', 'WRECK', 'CHISEL', 'LEVEL', 'RAZOR'],
+    words: ['DRILL', 'PLIER', 'CHISEL', 'LEVEL', 'RAZOR'],
     emoji: '🔧'
   },
   herbs: {
@@ -112,10 +111,9 @@ export const WORD_CATEGORIES = {
     name: 'Dance',
     words: ['SALSA', 'TWIST', 'WALTZ', 'TANGO', 'SWING'],
     emoji: '💃'
-  },
-  gems: {
+  },  gems: {
     name: 'Gems',
-    words: ['PEARL', 'JEWEL', 'CORAL', 'AMBER', 'TOPAZ'],
+    words: ['PEARL', 'JEWEL', 'ONYX', 'AMBER', 'TOPAZ'],
     emoji: '💎'
   },
   ocean: {
