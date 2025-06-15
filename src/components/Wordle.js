@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Wordle.css';
 import { WORD_CATEGORIES } from './wordleCategories';
-import { getRandomWord } from '../services/dictionaryService';
+import { getRandomWord, getWordDefinition } from '../services/dictionaryService';
+import WordModal from './WordModal';
 
 const Wordle = ({ onBackToMenu }) => {
   const [guesses, setGuesses] = useState(Array(6).fill(''));
@@ -17,6 +18,9 @@ const Wordle = ({ onBackToMenu }) => {
   const [evaluations, setEvaluations] = useState(Array(6).fill(null));
   const [revealedLetters, setRevealedLetters] = useState(Array(6).fill(Array(5).fill(false)));
   const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [wordDefinition, setWordDefinition] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const selectCategory = async (category) => {
     setCurrentCategory(category);
@@ -149,8 +153,36 @@ const Wordle = ({ onBackToMenu }) => {
     return evaluation;
   };
 
+  const handleNextWord = async () => {
+    setShowModal(false);
+    const newCategory = getRandomCategory();
+    await selectCategory(newCategory);
+    setCurrentRow(0);
+    setGuesses(Array(6).fill(''));
+    setCurrentGuess('');
+    setLetterStates({});
+    setGameOver(false);
+    setEvaluations(Array(6).fill(null));
+    setRevealedLetters(Array(6).fill(Array(5).fill(false)));
+  };
+
+  const showGameEndModal = async (success) => {
+    setIsSuccess(success);
+    try {
+      const definition = await getWordDefinition(targetWord);
+      setWordDefinition(definition);
+    } catch (error) {
+      console.error('Error fetching word definition:', error);
+      setWordDefinition({
+        word: targetWord,
+        definitions: [{ definition: 'Definition not available' }]
+      });
+    }
+    setShowModal(true);
+  };
+
   // Modify submitGuess to track category progress
-  const submitGuess = () => {
+  const submitGuess = async () => {
     const newGuesses = [...guesses];
     newGuesses[currentRow] = currentGuess;
     setGuesses(newGuesses);
@@ -160,6 +192,11 @@ const Wordle = ({ onBackToMenu }) => {
     const newEvaluations = [...evaluations];
     newEvaluations[currentRow] = evaluation;
     setEvaluations(newEvaluations);
+
+    // Reset revealed letters for the current row
+    const newRevealedLetters = [...revealedLetters];
+    newRevealedLetters[currentRow] = Array(5).fill(false);
+    setRevealedLetters(newRevealedLetters);
 
     // Update letter states
     const newLetterStates = { ...letterStates };
@@ -173,13 +210,24 @@ const Wordle = ({ onBackToMenu }) => {
       } else if (!newLetterStates[letter]) {
         newLetterStates[letter] = 'incorrect';
       }
+
+      // Reveal each letter after a delay
+      setTimeout(() => {
+        const updatedRevealedLetters = [...revealedLetters];
+        updatedRevealedLetters[currentRow] = [
+          ...updatedRevealedLetters[currentRow].slice(0, i),
+          true,
+          ...updatedRevealedLetters[currentRow].slice(i + 1)
+        ];
+        setRevealedLetters(updatedRevealedLetters);
+      }, i * 200);
     }
-    setLetterStates(newLetterStates);    
+    setLetterStates(newLetterStates);
+
     const isCorrect = currentGuess === targetWord;
     
     if (isCorrect) {
       setGameOver(true);
-      // Update category progress
       setCategoryProgress(prev => ({
         ...prev,
         [currentCategory]: {
@@ -188,37 +236,16 @@ const Wordle = ({ onBackToMenu }) => {
         }
       }));
 
-      // Show success message after a brief delay to allow animation to complete
+      // Show success modal after animation
       setTimeout(() => {
-        showMessage('Correct! Starting new category...');
+        showGameEndModal(true);
       }, 1500);
-      
-      // Select new random category after animation and message
-      setTimeout(() => {
-        const newCategory = getRandomCategory();
-        selectCategory(newCategory);
-        setCurrentRow(0);
-        setGuesses(Array(6).fill(''));
-        setCurrentGuess('');
-        setLetterStates({});
-        setGameOver(false);
-        setEvaluations(Array(6).fill(null));
-      }, 3000);
     } else if (currentRow === 5) {
       setGameOver(true);
-      showMessage(`Game Over! The word was ${targetWord}`);
-      
-      // Select new random category after game over
+      // Show failure modal after animation
       setTimeout(() => {
-        const newCategory = getRandomCategory();
-        selectCategory(newCategory);
-        setCurrentRow(0);
-        setGuesses(Array(6).fill(''));
-        setCurrentGuess('');
-        setLetterStates({});
-        setGameOver(false);
-        setEvaluations(Array(6).fill(null));
-      }, 3000);
+        showGameEndModal(false);
+      }, 1500);
     } else {
       setCurrentRow(prev => prev + 1);
       setCurrentGuess('');
@@ -353,6 +380,15 @@ const Wordle = ({ onBackToMenu }) => {
           ))}
         </div>
       </div>
+
+      <WordModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        word={targetWord}
+        definition={wordDefinition}
+        isSuccess={isSuccess}
+        onNextWord={handleNextWord}
+      />
     </div>
   );
 };

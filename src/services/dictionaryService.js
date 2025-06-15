@@ -1,4 +1,39 @@
-const API_BASE_URL = 'https://api.datamuse.com/words';
+const DATAMUSE_API_URL = 'https://api.datamuse.com/words';
+const DICTIONARY_API_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
+
+export const getWordDefinition = async (word) => {
+    try {
+        const response = await fetch(`${DICTIONARY_API_URL}${word.toLowerCase()}`);
+        if (!response.ok) {
+            throw new Error('Definition not found');
+        }
+        const data = await response.json();
+        
+        // Extract the most relevant information
+        const definitions = data[0]?.meanings?.map(meaning => ({
+            partOfSpeech: meaning.partOfSpeech,
+            definition: meaning.definitions[0].definition,
+            example: meaning.definitions[0].example
+        })) || [];
+
+        return {
+            word: data[0].word,
+            phonetic: data[0].phonetic || '',
+            definitions
+        };
+    } catch (error) {
+        console.error('Error fetching definition:', error);
+        return {
+            word: word,
+            phonetic: '',
+            definitions: [{
+                partOfSpeech: '',
+                definition: 'Definition not available',
+                example: ''
+            }]
+        };
+    }
+};
 
 export const getDictionaryWords = async (category) => {
     try {
@@ -14,10 +49,8 @@ export const getDictionaryWords = async (category) => {
             nature: 'rel_trg=nature+environment&max=100',
             colors: 'rel_trg=color+shade&max=100',
             cars: 'rel_trg=car+automobile&max=100'
-        };
-
-        const query = queryParams[category] || 'rel_trg=word&max=100';
-        const response = await fetch(`${API_BASE_URL}?${query}&md=f`);
+        };        const query = queryParams[category] || 'rel_trg=word&max=100';
+        const response = await fetch(`${DATAMUSE_API_URL}?${query}&md=f`);
         const words = await response.json();
         
         // Filter words that are exactly 5 letters long and convert to uppercase
