@@ -48,41 +48,66 @@ export const getWordDefinition = async (word) => {
 
 export const getDictionaryWords = async () => {
     try {
-        const queries = [
-            'sp=?????', // exactly 5 letters
-            'md=f' // include frequency information
+        const apiWords = new Set();
+        // Get words starting with different letters for better distribution
+        const letterGroups = [
+            'AEIOU',  // vowels
+            'BCDFG',  // early consonants
+            'HJKLM',  // middle consonants
+            'NPQRS',  // more middle consonants
+            'TVWXYZ'  // end consonants
         ];
 
-        const apiWords = new Set();
-        const response = await fetch(`${DATAMUSE_API_URL}?${queries.join('&')}&max=100`);
-                
-        if (!response.ok) {
-            throw new Error('Failed to fetch words');
+        // Fetch words for each letter group
+        for (const group of letterGroups) {
+            const randomLetter = group[Math.floor(Math.random() * group.length)];
+            const queries = [
+                `sp=${randomLetter}????`, // exactly 5 letters, starting with our chosen letter
+                'md=f' // include frequency information
+            ];
+
+            const response = await fetch(`${DATAMUSE_API_URL}?${queries.join('&')}&max=50`);
+                    
+            if (!response.ok) {
+                console.warn(`Failed to fetch words for letter ${randomLetter}`);
+                continue;
+            }
+
+            const words = await response.json();
+            console.log(`Received ${words.length} words starting with ${randomLetter}`);
+            
+            // Filter and add valid words to the set
+            words
+                .filter(word => {
+                    const wordStr = word.word.toUpperCase();
+                    return !isCommonWord(wordStr) && /^[A-Z]{5}$/i.test(word.word);
+                })
+                .forEach(word => apiWords.add(word.word.toUpperCase()));
         }
 
-        const words = await response.json();
-        console.log(`Received ${words.length} words from API`);
-        
-        // Filter and add valid words to the set
-        words
-            .filter(word => {
-                const wordStr = word.word.toUpperCase();
-                return !isCommonWord(wordStr) && /^[A-Z]{5}$/i.test(word.word);
-            })
-            .forEach(word => apiWords.add(word.word.toUpperCase()));
-
         const allWords = [...apiWords];
-        console.log(`Found ${allWords.length} valid words`);
+        console.log(`Found ${allWords.length} valid words across different starting letters`);
 
         if (allWords.length === 0) {
             throw new Error('No valid words found');
         }
 
+        // Shuffle the array for extra randomness
+        for (let i = allWords.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
+        }
+
         return allWords;
     } catch (error) {
         console.error('Error in getDictionaryWords:', error);
-        // Return some default words as fallback
-        return ['HAPPY', 'GAMES', 'LIMIT', 'BEACH', 'DREAM', 'WORLD', 'LIGHT', 'SPACE', 'MUSIC', 'DANCE'];
+        // Return some default words as fallback with varied starting letters
+        return [
+            'HAPPY', 'BRAIN', 'CLOUD', 'DREAM', 'EAGLE',
+            'FLAME', 'GHOST', 'HEART', 'IVORY', 'JOKER',
+            'LIGHT', 'MUSIC', 'NIGHT', 'OCEAN', 'PEARL',
+            'QUICK', 'RIVER', 'STORM', 'TIGER', 'VOICE'
+        ];
     }
 };
 
