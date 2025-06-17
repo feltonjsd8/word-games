@@ -1,6 +1,9 @@
 const DATAMUSE_API_URL = 'https://api.datamuse.com/words';
 const DICTIONARY_API_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
+// Cache for valid words to reduce API calls
+const validWordCache = new Set();
+
 const isCommonWord = (word) => {
     const commonWords = new Set([
         'WORDS', 'THING', 'STUFF', 'ITEMS', 'TYPES',
@@ -46,68 +49,33 @@ export const getWordDefinition = async (word) => {
     }
 };
 
-export const getDictionaryWords = async () => {
+export const isValidWord = async (word) => {
+    // First check our cache
+    if (validWordCache.has(word.toUpperCase())) {
+        return true;
+    }
+
     try {
-        const apiWords = new Set();
-        // Get words starting with different letters for better distribution
-        const letterGroups = [
-            'AEIOU',  // vowels
-            'BCDFG',  // early consonants
-            'HJKLM',  // middle consonants
-            'NPQRS',  // more middle consonants
-            'TVWXYZ'  // end consonants
-        ];
-
-        // Fetch words for each letter group
-        for (const group of letterGroups) {
-            const randomLetter = group[Math.floor(Math.random() * group.length)];
-            const queries = [
-                `sp=${randomLetter}????`, // exactly 5 letters, starting with our chosen letter
-                'md=f' // include frequency information
-            ];
-
-            const response = await fetch(`${DATAMUSE_API_URL}?${queries.join('&')}&max=50`);
-                    
-            if (!response.ok) {
-                console.warn(`Failed to fetch words for letter ${randomLetter}`);
-                continue;
-            }
-
-            const words = await response.json();
-            console.log(`Received ${words.length} words starting with ${randomLetter}`);
-            
-            // Filter and add valid words to the set
-            words
-                .filter(word => {
-                    const wordStr = word.word.toUpperCase();
-                    return !isCommonWord(wordStr) && /^[A-Z]{5}$/i.test(word.word);
-                })
-                .forEach(word => apiWords.add(word.word.toUpperCase()));
+        // Use sp (spelling) parameter for exact match
+        const response = await fetch(`${DATAMUSE_API_URL}?sp=${word.toLowerCase()}&md=f&max=1`);
+        
+        if (!response.ok) {
+            return false;
         }
 
-        const allWords = [...apiWords];
-        console.log(`Found ${allWords.length} valid words across different starting letters`);
-
-        if (allWords.length === 0) {
-            throw new Error('No valid words found');
+        const words = await response.json();
+        const isValid = words.length > 0 && words[0].word.toLowerCase() === word.toLowerCase();
+        
+        // If it's valid, add to cache for future checks
+        if (isValid) {
+            validWordCache.add(word.toUpperCase());
         }
-
-        // Shuffle the array for extra randomness
-        for (let i = allWords.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
-        }
-
-        return allWords;
+        
+        return isValid;
     } catch (error) {
-        console.error('Error in getDictionaryWords:', error);
-        // Return some default words as fallback with varied starting letters
-        return [
-            'HAPPY', 'BRAIN', 'CLOUD', 'DREAM', 'EAGLE',
-            'FLAME', 'GHOST', 'HEART', 'IVORY', 'JOKER',
-            'LIGHT', 'MUSIC', 'NIGHT', 'OCEAN', 'PEARL',
-            'QUICK', 'RIVER', 'STORM', 'TIGER', 'VOICE'
-        ];
+        console.error('Error checking word validity:', error);
+        // Fall back to basic validation in case of API error
+        return /^[A-Z]{5}$/i.test(word);
     }
 };
 
@@ -146,5 +114,75 @@ export const getRandomWord = async (excludeWords = []) => {
     } catch (error) {
         console.error('Error getting random word:', error);
         return 'ERROR';
+    }
+};
+
+export const getDictionaryWords = async () => {
+    try {
+        const apiWords = new Set();
+        const letterGroups = [
+            'AEIOU',  // vowels
+            'BCDFG',  // early consonants
+            'HJKLM',  // middle consonants
+            'NPQRS',  // more middle consonants
+            'TVWXYZ'  // end consonants
+        ];
+
+        // Fetch words for each letter group
+        for (const group of letterGroups) {
+            const randomLetter = group[Math.floor(Math.random() * group.length)];
+            const queries = [
+                `sp=${randomLetter}????`, // exactly 5 letters, starting with our chosen letter
+                'md=f' // include frequency information
+            ];
+
+            const response = await fetch(`${DATAMUSE_API_URL}?${queries.join('&')}&max=50`);
+                    
+            if (!response.ok) {
+                console.warn(`Failed to fetch words for letter ${randomLetter}`);
+                continue;
+            }
+
+            const words = await response.json();
+            console.log(`Received ${words.length} words starting with ${randomLetter}`);
+            
+            // Filter and add valid words to the set
+            words
+                .filter(word => {
+                    const wordStr = word.word.toUpperCase();
+                    return !isCommonWord(wordStr) && /^[A-Z]{5}$/i.test(word.word);
+                })
+                .forEach(word => {
+                    const upperWord = word.word.toUpperCase();
+                    apiWords.add(upperWord);
+                    validWordCache.add(upperWord); // Add to cache for future validation
+                });
+        }
+
+        const allWords = [...apiWords];
+        console.log(`Found ${allWords.length} valid words across different starting letters`);
+
+        if (allWords.length === 0) {
+            throw new Error('No valid words found');
+        }
+
+        // Shuffle the array for extra randomness
+        for (let i = allWords.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
+        }
+
+        return allWords;
+    } catch (error) {
+        console.error('Error in getDictionaryWords:', error);
+        // Add fallback words to cache as well
+        const fallbackWords = [
+            'HAPPY', 'BRAIN', 'CLOUD', 'DREAM', 'EAGLE',
+            'FLAME', 'GHOST', 'HEART', 'IVORY', 'JOKER',
+            'LIGHT', 'MUSIC', 'NIGHT', 'OCEAN', 'PEARL',
+            'QUICK', 'RIVER', 'STORM', 'TIGER', 'VOICE'
+        ];
+        fallbackWords.forEach(word => validWordCache.add(word));
+        return fallbackWords;
     }
 };

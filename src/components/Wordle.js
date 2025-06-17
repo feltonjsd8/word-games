@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Wordle.css';
-import { getRandomWord, getWordDefinition } from '../services/dictionaryService';
+import { getRandomWord, getWordDefinition, isValidWord } from '../services/dictionaryService';
 import WordModal from './WordModal';
 
 const Wordle = ({ onBackToMenu }) => {
@@ -129,64 +129,68 @@ const Wordle = ({ onBackToMenu }) => {
 
   // Modify submitGuess to track category progress
   const submitGuess = async () => {
-    const newGuesses = [...guesses];
-    newGuesses[currentRow] = currentGuess;
-    setGuesses(newGuesses);
+    // First validate that the guess is a real word
+    const isValid = await isValidWord(currentGuess);
+    if (!isValid) {
+      showMessage('Not a valid word');
+      return;
+    }
 
-    // Evaluate the current guess
     const evaluation = evaluateGuess(currentGuess, targetWord);
+    
+    // Update evaluations
     const newEvaluations = [...evaluations];
     newEvaluations[currentRow] = evaluation;
     setEvaluations(newEvaluations);
-
-    // Reset revealed letters for the current row
-    const newRevealedLetters = [...revealedLetters];
-    newRevealedLetters[currentRow] = Array(5).fill(false);
-    setRevealedLetters(newRevealedLetters);
-
-    // Update letter states
+    
+    // Update guesses
+    const newGuesses = [...guesses];
+    newGuesses[currentRow] = currentGuess;
+    setGuesses(newGuesses);
+    
+    // Update letter states for keyboard
     const newLetterStates = { ...letterStates };
     for (let i = 0; i < currentGuess.length; i++) {
       const letter = currentGuess[i];
-      const status = evaluation[i];
-      if (status === 'correct') {
-        newLetterStates[letter] = 'correct';
-      } else if (status === 'wrong-position' && newLetterStates[letter] !== 'correct') {
-        newLetterStates[letter] = 'wrong-position';
-      } else if (!newLetterStates[letter]) {
-        newLetterStates[letter] = 'incorrect';
+      const currentState = newLetterStates[letter];
+      const newState = evaluation[i];
+      
+      if (currentState !== 'correct') {
+        if (newState === 'correct' || 
+           (newState === 'present' && currentState !== 'present') ||
+           (!currentState && newState === 'incorrect')) {
+          newLetterStates[letter] = newState;
+        }
       }
-
-      // Reveal each letter after a delay
-      setTimeout(() => {
-        const updatedRevealedLetters = [...revealedLetters];
-        updatedRevealedLetters[currentRow] = [
-          ...updatedRevealedLetters[currentRow].slice(0, i),
-          true,
-          ...updatedRevealedLetters[currentRow].slice(i + 1)
-        ];
-        setRevealedLetters(updatedRevealedLetters);
-      }, i * 200);
     }
-    setLetterStates(newLetterStates);    const isCorrect = currentGuess === targetWord;
+    setLetterStates(newLetterStates);
     
-    if (isCorrect) {
+    // Check if game is over
+    if (currentGuess === targetWord) {
       setGameOver(true);
+      setIsSuccess(true);
       setCompletedWord(targetWord);
-
-      // Show success modal after animation
-      setTimeout(() => {
-        showGameEndModal(true, targetWord);
-      }, 1500);
+      // Get definition for the modal
+      try {
+        const def = await getWordDefinition(targetWord);
+        setWordDefinition(def);
+        setShowModal(true);
+      } catch (error) {
+        console.error('Error fetching definition:', error);
+      }
     } else if (currentRow === 5) {
       setGameOver(true);
       setCompletedWord(targetWord);
-      // Show failure modal after animation
-      setTimeout(() => {
-        showGameEndModal(false, targetWord);
-      }, 1500);
+      // Get definition for the modal
+      try {
+        const def = await getWordDefinition(targetWord);
+        setWordDefinition(def);
+        setShowModal(true);
+      } catch (error) {
+        console.error('Error fetching definition:', error);
+      }
     } else {
-      setCurrentRow(prev => prev + 1);
+      setCurrentRow(currentRow + 1);
       setCurrentGuess('');
     }
   };
