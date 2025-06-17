@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/word-games/static/css/main.70f8f379.css",
+    "main.js": "/word-games/static/js/main.8a8c0d08.js",
+    "index.html": "/word-games/index.html",
+    "main.70f8f379.css.map": "/word-games/static/css/main.70f8f379.css.map",
+    "main.8a8c0d08.js.map": "/word-games/static/js/main.8a8c0d08.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.70f8f379.css",
+    "static/js/main.8a8c0d08.js"
+  ]
+}
