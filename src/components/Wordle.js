@@ -154,10 +154,9 @@ const Wordle = ({ onBackToMenu }) => {
       const letter = currentGuess[i];
       const currentState = newLetterStates[letter];
       const newState = evaluation[i];
-      
       if (currentState !== 'correct') {
         if (newState === 'correct' || 
-           (newState === 'present' && currentState !== 'present') ||
+           (newState === 'wrong-position' && currentState !== 'wrong-position') ||
            (!currentState && newState === 'incorrect')) {
           newLetterStates[letter] = newState;
         }

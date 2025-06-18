@@ -176,6 +176,7 @@
 .key.wrong-position {
   background-color: #c9b458;
   color: white;
+  border: 2px solid #b59f3b;
 }
 
 .message {
