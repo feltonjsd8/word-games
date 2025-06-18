@@ -127,23 +127,25 @@
   grid-template-rows: repeat(3, 1fr);
   gap: 8px;
   width: 100%;
-  max-width: 600px;
-  padding: 10px;
+  max-width: 500px;
+  padding: 5px;
 }
 
 .keyboard-row {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .key {
-  min-width: 40px;
-  height: 58px;
+  min-width: 32px;
+  height: 45px;
+  padding: 0 8px;
   border-radius: 4px;
   border: none;
   background-color: #d3d6da;
   font-weight: bold;
+  font-size: 0.9rem;
   cursor: pointer;
   text-transform: uppercase;
   display: flex;
@@ -201,16 +203,32 @@
 }
 
 @media (max-width: 600px) {
-  .wordle-tile {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
+  .keyboard {
+    gap: 4px;
+    padding: 5px;
+  }
+
+  .keyboard-row {
+    gap: 3px;
   }
 
   .key {
-    min-width: 30px;
+    min-width: 28px;
+    height: 42px;
+    padding: 0 6px;
+    font-size: 0.85rem;
+  }
+
+  .key[data-key="ENTER"],
+  .key[data-key="BACKSPACE"] {
+    min-width: 50px;
+    font-size: 0.75rem;
+  }
+  
+  .wordle-tile {
+    width: 45px;
     height: 45px;
-    font-size: 0.9rem;
+    font-size: 1.5rem;
   }
 }
 

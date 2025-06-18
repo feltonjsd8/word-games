@@ -264,26 +264,41 @@ const Wordle = ({ onBackToMenu }) => {
               ))}
             </div>
           ))}
-        </div>
-
-        <div className="keyboard">
+        </div>        <div className="keyboard">
           {[
             'QWERTYUIOP',
             'ASDFGHJKL',
             'ZXCVBNM'
           ].map((row, i) => (
             <div key={i} className="keyboard-row">
-              {i === 2 && <button className="key" onClick={() => handleKeyPress('ENTER')}>ENTER</button>}
+              {i === 2 && (
+                <button 
+                  className="key" 
+                  onClick={() => handleKeyPress('ENTER')}
+                  data-key="ENTER"
+                >
+                  ENTER
+                </button>
+              )}
               {row.split('').map(key => (
                 <button
                   key={key}
                   className={`key ${letterStates[key] || ''}`}
                   onClick={() => handleKeyPress(key)}
+                  data-key={key}
                 >
                   {key}
                 </button>
               ))}
-              {i === 2 && <button className="key" onClick={() => handleKeyPress('BACKSPACE')}>←</button>}
+              {i === 2 && (
+                <button 
+                  className="key" 
+                  onClick={() => handleKeyPress('BACKSPACE')}
+                  data-key="BACKSPACE"
+                >
+                  ←
+                </button>
+              )}
             </div>
           ))}
         </div>
