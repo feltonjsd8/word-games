@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/Wordle.css';
 import { getRandomWord, getWordDefinition, isValidWord } from '../services/dictionaryService';
 import WordModal from './WordModal';
@@ -20,6 +20,8 @@ const Wordle = ({ onBackToMenu }) => {
   const [completedWord, setCompletedWord] = useState('');
   const [showClue, setShowClue] = useState(false);
   const [clue, setClue] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef();
 
   const startNewGame = async () => {
     setIsLoading(true);
@@ -243,19 +245,43 @@ const Wordle = ({ onBackToMenu }) => {
     }
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClick);
+    } else {
+      document.removeEventListener('mousedown', handleClick);
+    }
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [menuOpen]);
+
   return (
     <div className="wordle">
       <div className="game-header">
         <div className="header-content">
           <h1>Wordle</h1>
         </div>
-        <div className="header-buttons">
-          <button onClick={startNewGame} className="new-game-button">
-            New Game
+        <div className="burger-menu-anchor">
+          <button
+            className="burger-menu-btn"
+            aria-label="Open menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span className="burger-bar"></span>
+            <span className="burger-bar"></span>
+            <span className="burger-bar"></span>
           </button>
-          <button onClick={onBackToMenu} className="menu-button">
-            Back to Menu
-          </button>
+          {menuOpen && (
+            <div className="burger-dropdown" ref={menuRef}>
+              <button onClick={startNewGame} className="dropdown-item">New Game</button>
+              <button onClick={onBackToMenu} className="dropdown-item">Back to Menu</button>
+            </div>
+          )}
         </div>
       </div>
 
