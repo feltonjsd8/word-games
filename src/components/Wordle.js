@@ -260,6 +260,41 @@ const Wordle = ({ onBackToMenu }) => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [menuOpen]);
 
+  const revealAnswer = async () => {
+    if (gameOver) return;
+    // Fill the current row with the correct answer and animate as if guessed
+    const answer = targetWord;
+    const evaluation = evaluateGuess(answer, targetWord);
+    const newGuesses = [...guesses];
+    const newEvaluations = [...evaluations];
+    newGuesses[currentRow] = answer;
+    newEvaluations[currentRow] = evaluation;
+    setGuesses(newGuesses);
+    setEvaluations(newEvaluations);
+    setCurrentGuess('');
+    setGameOver(true);
+    setIsSuccess(true);
+    setCompletedWord(targetWord);
+    // Update letter states for keyboard
+    const newLetterStates = { ...letterStates };
+    for (let i = 0; i < answer.length; i++) {
+      const letter = answer[i];
+      newLetterStates[letter] = evaluation[i];
+    }
+    setLetterStates(newLetterStates);
+    // Show modal after animation
+    setTimeout(async () => {
+      try {
+        const def = await getWordDefinition(targetWord);
+        setWordDefinition(def);
+        setShowModal(true);
+      } catch (error) {
+        setShowModal(true);
+      }
+    }, 1200);
+    setMenuOpen(false);
+  };
+
   return (
     <div className="wordle">
       <div className="game-header">
@@ -279,7 +314,8 @@ const Wordle = ({ onBackToMenu }) => {
           {menuOpen && (
             <div className="burger-dropdown" ref={menuRef}>
               <button onClick={startNewGame} className="dropdown-item">New Game</button>
-              <button onClick={onBackToMenu} className="dropdown-item">Back to Menu</button>
+              <button onClick={onBackToMenu} className="dropdown-item">Main Menu</button>
+              <button onClick={revealAnswer} className="dropdown-item">Reveal</button>
             </div>
           )}
         </div>
