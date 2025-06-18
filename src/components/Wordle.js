@@ -292,12 +292,14 @@ const Wordle = ({ onBackToMenu }) => {
         </div>
         <div className="keyboard">
           {[
-            'QWERTYUIOP',
-            'ASDFGHJKL',
-            'ZXCVBNM'
+            'QWERTYU', // 7 keys: Q W E R T Y U
+            'IOPASDF', // 7 keys: I O P A S D F
+            'GHJKLZX', // 7 keys: G H J K L Z X
+            'CVBNM'    // 5 keys: C V B N M
           ].map((row, i) => (
             <div key={i} className="keyboard-row">
-              {i === 2 && (
+              {/* Place ENTER and BACKSPACE on the last row */}
+              {i === 3 && (
                 <button 
                   className="key" 
                   onClick={() => handleKeyPress('ENTER')}
@@ -316,7 +318,7 @@ const Wordle = ({ onBackToMenu }) => {
                   {key}
                 </button>
               ))}
-              {i === 2 && (
+              {i === 3 && (
                 <button 
                   className="key" 
                   onClick={() => handleKeyPress('BACKSPACE')}

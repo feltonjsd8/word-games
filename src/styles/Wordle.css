@@ -123,35 +123,37 @@
 }
 
 .keyboard {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* Increased vertical space between rows */
   width: 100%;
   max-width: 500px;
-  padding: 5px;
+  padding: 10px 0 20px 0;
 }
 
 .keyboard-row {
   display: flex;
   justify-content: center;
-  gap: 4px;
+  gap: 10px; /* More space between keys */
+  margin-bottom: 0;
 }
 
 .key {
-  min-width: 32px;
-  height: 45px;
-  padding: 0 8px;
-  border-radius: 4px;
+  min-width: 44px; /* Bigger keys for mobile */
+  height: 56px;
+  padding: 0 14px;
+  border-radius: 8px;
   border: none;
   background-color: #d3d6da;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1.15rem;
   cursor: pointer;
   text-transform: uppercase;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: background-color 0.2s;
+  touch-action: manipulation;
 }
 
 .key:hover {
@@ -203,33 +205,49 @@
   }
 }
 
+/* Responsive: fewer keys per row, larger keys, more vertical space */
 @media (max-width: 600px) {
   .keyboard {
-    gap: 4px;
-    padding: 5px;
+    gap: 12px;
+    padding: 10px 0 20px 0;
+    max-width: 100vw;
   }
-
   .keyboard-row {
-    gap: 3px;
+    gap: 7px;
   }
-
   .key {
-    min-width: 28px;
-    height: 42px;
-    padding: 0 6px;
-    font-size: 0.85rem;
+    min-width: 38px;
+    height: 48px;
+    padding: 0 10px;
+    font-size: 1.05rem;
+    border-radius: 7px;
   }
-
   .key[data-key="ENTER"],
   .key[data-key="BACKSPACE"] {
-    min-width: 50px;
-    font-size: 0.75rem;
+    min-width: 60px;
+    font-size: 0.95rem;
   }
-  
-  .wordle-tile {
-    width: 45px;
-    height: 45px;
-    font-size: 1.5rem;
+}
+
+@media (max-width: 430px) {
+  .keyboard {
+    gap: 14px;
+    padding: 8px 0 16px 0;
+  }
+  .keyboard-row {
+    gap: 5px;
+  }
+  .key {
+    min-width: 32px;
+    height: 42px;
+    padding: 0 7px;
+    font-size: 0.95rem;
+    border-radius: 6px;
+  }
+  .key[data-key="ENTER"],
+  .key[data-key="BACKSPACE"] {
+    min-width: 48px;
+    font-size: 0.85rem;
   }
 }
 
