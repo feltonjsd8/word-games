@@ -18,6 +18,8 @@ const Wordle = ({ onBackToMenu }) => {
   const [wordDefinition, setWordDefinition] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [completedWord, setCompletedWord] = useState('');
+  const [showClue, setShowClue] = useState(false);
+  const [clue, setClue] = useState('');
 
   const startNewGame = async () => {
     setIsLoading(true);
@@ -34,6 +36,8 @@ const Wordle = ({ onBackToMenu }) => {
       setRevealedLetters(Array(6).fill(Array(5).fill(false)));
       setIsSuccess(false);
       setCompletedWord('');
+      setShowClue(false);
+      setClue('');
     } catch (error) {
       console.error('Error selecting word:', error);
       showMessage('Error loading word. Please try again.');
@@ -227,6 +231,18 @@ const Wordle = ({ onBackToMenu }) => {
     '--flip-delay': `${index * 200}ms`
   });
 
+  const getClue = async () => {
+    if (!targetWord) return;
+    try {
+      const def = await getWordDefinition(targetWord);
+      setClue(def.definitions[0]?.definition || 'No clue available');
+      setShowClue(true);
+    } catch (e) {
+      setClue('No clue available');
+      setShowClue(true);
+    }
+  };
+
   return (
     <div className="wordle">
       <div className="game-header">
@@ -263,7 +279,18 @@ const Wordle = ({ onBackToMenu }) => {
               ))}
             </div>
           ))}
-        </div>        <div className="keyboard">
+        </div>
+        <div style={{ marginBottom: 10 }}>
+          <button className="clue-button" onClick={getClue} disabled={showClue} style={{marginBottom: 8}}>
+            Get Clue
+          </button>
+          {showClue && clue && (
+            <div className="clue-text" style={{marginBottom: 8, color: '#1a73e8', fontStyle: 'italic'}}>
+              Clue: {clue}
+            </div>
+          )}
+        </div>
+        <div className="keyboard">
           {[
             'QWERTYUIOP',
             'ASDFGHJKL',
