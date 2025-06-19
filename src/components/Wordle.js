@@ -299,7 +299,7 @@ const Wordle = ({ onBackToMenu }) => {
     <div className="wordle">
       <div className="game-header">
         <div className="header-content">
-          <h1>Wordle</h1>
+          <h1>Eleanordle</h1>
         </div>
         <div className="burger-menu-anchor">
           <button
@@ -313,6 +313,7 @@ const Wordle = ({ onBackToMenu }) => {
           </button>
           {menuOpen && (
             <div className="burger-dropdown" ref={menuRef}>
+              <button onClick={getClue} className="dropdown-item" disabled={showClue}>Get Clue</button>
               <button onClick={startNewGame} className="dropdown-item">New Game</button>
               <button onClick={onBackToMenu} className="dropdown-item">Main Menu</button>
               <button onClick={revealAnswer} className="dropdown-item">Reveal</button>
@@ -342,16 +343,11 @@ const Wordle = ({ onBackToMenu }) => {
             </div>
           ))}
         </div>
-        <div style={{ marginBottom: 10 }}>
-          <button className="clue-button" onClick={getClue} disabled={showClue} style={{marginBottom: 8}}>
-            Get Clue
-          </button>
-          {showClue && clue && (
-            <div className="clue-text" style={{marginBottom: 8, color: '#1a73e8', fontStyle: 'italic'}}>
-              Clue: {clue}
-            </div>
-          )}
-        </div>
+        {showClue && clue && (
+          <div className="clue-text" style={{marginBottom: 8, color: '#1a73e8', fontStyle: 'italic'}}>
+            Clue: {clue}
+          </div>
+        )}
         <div className="keyboard">
           {[
             'QWERTYUIOP', // 10 keys: Q W E R T Y U I O P
