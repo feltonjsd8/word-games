@@ -10,7 +10,7 @@ const Menu = ({ onSelectGame }) => {
           Hangman
         </button>
         <button onClick={() => onSelectGame('wordle')}>
-          Wordle
+          Eleanordle
         </button>
       </div>
     </div>
